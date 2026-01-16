@@ -26,6 +26,7 @@ class Encryptor {
 
   Ciphertext EncryptZero() const;
   Ciphertext Encrypt(const Plaintext &m) const;
+  Ciphertext RawEncrypt(const Plaintext &m) const;
 
   std::pair<Ciphertext, std::string> EncryptWithAudit(const Plaintext &m) const;
 

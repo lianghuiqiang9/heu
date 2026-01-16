@@ -31,6 +31,7 @@ class LookupTable {
   void Init(const std::shared_ptr<EcGroup> &curve);
 
   int64_t Search(const EcPoint &p) const;  // Thread safe
+  int64_t RawSearch(const EcPoint &p) const;
   static const MPInt &MaxSupportedValue();
 
  private:

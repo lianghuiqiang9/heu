@@ -40,6 +40,17 @@ Ciphertext Encryptor::Encrypt(const Plaintext &m) const {
                     pk_.GetCurve()->MulDoubleBase(m, r, pk_.GetH()));
 }
 
+Ciphertext Encryptor::RawEncrypt(const Plaintext &m) const {
+  //YACL_ENFORCE(m.CompareAbs(pk_.PlaintextBound()) <= 0,
+  //             "message number out of range, message={}, max (abs)={}", m,
+  //             pk_.PlaintextBound());
+
+  MPInt r;
+  MPInt::RandomLtN(pk_.GetCurve()->GetOrder(), &r);
+  return Ciphertext(pk_.GetCurve(), pk_.GetCurve()->MulBase(r),
+                    pk_.GetCurve()->MulDoubleBase(m, r, pk_.GetH()));
+}
+
 std::pair<Ciphertext, std::string> Encryptor::EncryptWithAudit(
     const Plaintext &m) const {
   YACL_ENFORCE(m.CompareAbs(pk_.PlaintextBound()) <= 0,

@@ -30,4 +30,11 @@ Plaintext Decryptor::Decrypt(const Ciphertext &ct) const {
   return Plaintext(sk_.GetInitedLookupTable()->Search(mg));
 }
 
+Plaintext Decryptor::RawDecrypt(const Ciphertext &ct) const {
+  auto mg = pk_.GetCurve()->Sub(ct.c2, pk_.GetCurve()->Mul(ct.c1, sk_.GetX()));
+
+  // now we know G and mG, recover m by a lookup table
+  return Plaintext(sk_.GetInitedLookupTable()->RawSearch(mg));
+}
+
 }  // namespace heu::lib::algorithms::elgamal

@@ -1,0 +1,62 @@
+#include "heu/library/algorithms/elgamal_kpir/kpir.h"
+#include "gtest/gtest.h"
+
+namespace heu::lib::algorithms::elgamal_kpir::test {
+
+class ElGamalKpirTest : public testing::Test {
+ protected:
+  static void SetUpTestSuite() { KeyGenerator::Generate("sm2", &sk_, &pk_); }
+
+  static SecretKey sk_;
+  static PublicKey pk_;
+};
+
+SecretKey ElGamalKpirTest::sk_;
+PublicKey ElGamalKpirTest::pk_;
+
+TEST_F(ElGamalKpirTest, FullWorkflow) {
+
+    uint32_t logN = 5;              // 数据库大小 2^10
+    uint32_t logX = 6;              // 索引长度 bits
+    uint32_t logY = 6;              // 索引长度 bits
+    uint32_t logL = 32;             // 标签长度 bits
+
+    uint32_t s = 1 << (logN / 2);               // s = sqrt N
+    uint32_t t = ((1 << logN) + s - 1) / s;     // t = sqrt N
+
+    std::cout << "--- KPIR Configuration ---\n"
+              << "Database Size (n): " << (1<<logN) << "\n"
+              << "Query Range: [0, " << (1<<logX) << ")\n"
+              << "Optimization (s, t): (" << s << ", " << t << ")\n" << std::endl;
+
+    const Encryptor encryptor(pk_);
+    const Evaluator evaluator(pk_);
+    const Decryptor decryptor(pk_, sk_);
+  
+    auto order = pk_.GetCurve()->GetOrder();
+    //auto order = pk_.PlaintextBound();
+    std::cout<<"order: "<<order<<std::endl;
+    Database db;
+    db.Random(logN, logY, logL);
+    db.GetCoeffs(order);
+    
+    for (int i=0;i<1;++i){
+      yacl::math::MPInt k = yacl::math::MPInt::RandomLtN(yacl::math::MPInt(2).Pow(logX)); ////db.Y[4];
+
+      auto queryState = PolyKPIR::Query(encryptor, k, s, order);
+      auto query = queryState.cipherX;
+    
+      auto response = PolyKPIR::Answer(evaluator, encryptor, query, db, s);
+   
+      auto result = PolyKPIR::Recover(evaluator, decryptor, response, queryState.plainX);
+    
+      bool isCorrect = PolyKPIR::Verify(k, db, result);
+    
+      std::cout << "\n--- Final Result ---" << std::endl;
+      std::cout << "Query Keyword: " << k << std::endl;
+      std::cout << "Recovered Label: " << result << std::endl;
+      std::cout << "Verification: " << (isCorrect ? "SUCCESS ✅" : "FAILED ❌, not found") << std::endl;
+    }
+}
+
+} // namespace heu::lib::algorithms::elgamal_kpir::test

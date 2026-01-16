@@ -90,4 +90,36 @@ int64_t LookupTable::Search(const EcPoint &p) const {
   YACL_THROW("ElGamal: Cannot decrypt, the plaintext is too big");
 }
 
+int64_t LookupTable::RawSearch(const EcPoint &p) const {
+  auto *it = table_->Find(p);
+  if (it != nullptr) {
+    return *it;
+  }
+
+  auto im_pos = curve_->Add(p, table_max_neg_);  // assume point is positive
+  auto im_neg = curve_->Add(p, table_max_pos_);
+  for (int64_t i = 1; i < kSearchMaxValue; ++i) {
+    it = table_->Find(im_pos);
+    if (it != nullptr) {
+      return *it + i * kTableMaxValue;
+    }
+
+    it = table_->Find(im_neg);
+    if (it != nullptr) {
+      return *it - i * kTableMaxValue;
+    }
+
+    curve_->AddInplace(&im_pos, table_max_neg_);
+    curve_->AddInplace(&im_neg, table_max_pos_);
+  }
+
+  // last try for negative point
+  it = table_->Find(im_neg);
+  if (it != nullptr) {
+    return *it - kSearchMaxValue * kTableMaxValue;
+  }
+
+  return 0;
+}
+
 }  // namespace heu::lib::algorithms::elgamal

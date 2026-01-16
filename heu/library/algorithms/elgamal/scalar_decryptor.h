@@ -29,6 +29,7 @@ class Decryptor {
 
   void Decrypt(const Ciphertext &ct, Plaintext *out) const;
   Plaintext Decrypt(const Ciphertext &ct) const;
+  Plaintext RawDecrypt(const Ciphertext &ct) const;
 
  private:
   PublicKey pk_;
