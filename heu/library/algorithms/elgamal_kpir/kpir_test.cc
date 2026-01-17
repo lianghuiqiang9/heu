@@ -16,11 +16,11 @@ PublicKey ElGamalKpirTest::pk_;
 
 TEST_F(ElGamalKpirTest, FullWorkflow) {
 
-    uint32_t logN = 5;              // 数据库大小 2^10
-    uint32_t logX = 6;              // 索引长度 bits
-    uint32_t logY = 6;              // 索引长度 bits
-    uint32_t logL = 32;             // 标签长度 bits
-
+    uint32_t logN = 5;              // database size 2^logN
+    uint32_t logX = 6;              // key bits
+    uint32_t logY = 6;              // key bits
+    uint32_t logL = 32;             // label bits
+    
     uint32_t s = 1 << (logN / 2);               // s = sqrt N
     uint32_t t = ((1 << logN) + s - 1) / s;     // t = sqrt N
 

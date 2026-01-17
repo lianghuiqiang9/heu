@@ -24,8 +24,6 @@ public:
 class PolyKPIR {
 public:
 
-    // static std::unique_ptr<heu::lib::algorithms::elgamal::SecretKey> Setup();
-
     struct QueryState {
         std::vector<Ciphertext> cipherX;
         std::vector<yacl::math::MPInt> plainX;
