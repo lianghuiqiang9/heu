@@ -3,7 +3,7 @@
 namespace heu::lib::algorithms::elgamal_kpir {
 
 
-void Database::Random(uint32_t logN, uint32_t logY,uint32_t logL) {
+void Database::Random(uint32_t logN, uint32_t logY, uint32_t logL) {
     if (logN > logY) {
         throw std::runtime_error("Error: logN cannot be greater than logY. "
                                  "Not enough unique values available for Y.");
@@ -90,20 +90,19 @@ void Database::GetCoeffs(const yacl::math::MPInt& order) {
     }
 
 }
-/*
-std::unique_ptr<heu::lib::algorithms::elgamal::SecretKey> PolyKPIR::Setup() {
-  SecretKey sk_;
-  PublicKey pk_;
-  KeyGenerator::Generate("sm2", &sk_, &pk_);
-  return std::make_unique<heu::lib::algorithms::elgamal::SecretKey>(sk_)
+
+yacl::math::MPInt Database::GetVal(const yacl::math::MPInt& x){
+    for (size_t i = 0; i < Y.size(); ++i) {
+        if (x == Y[i]) return L[i];
+    }
+    return yacl::math::MPInt::_0_;
 }
-*/
-PolyKPIR::QueryState PolyKPIR::Query(heu::lib::algorithms::elgamal::Encryptor encryptor, 
+
+PolyKPIR::QueryState PolyKPIR::Query(const Encryptor& encryptor, 
                                       const yacl::math::MPInt& x, 
                                       uint32_t s,
-                                      yacl::math::MPInt order) {
-    //auto order = pk.GetEcGroup()->GetOrder();
-    
+                                      yacl::math::MPInt& order) {
+
     std::vector<yacl::math::MPInt> plainX;
     plainX.reserve(s);
     
@@ -121,8 +120,8 @@ PolyKPIR::QueryState PolyKPIR::Query(heu::lib::algorithms::elgamal::Encryptor en
     return {cipherX, plainX};
 }
 
-std::vector<Ciphertext> PolyKPIR::Answer(const heu::lib::algorithms::elgamal::Evaluator evaluator,
-                                         const heu::lib::algorithms::elgamal::Encryptor encryptor, 
+std::vector<Ciphertext> PolyKPIR::Answer(const Evaluator& evaluator,
+                                         const Encryptor& encryptor, 
                                          const std::vector<Ciphertext>& cipherX, 
                                          const Database& db, 
                                          uint32_t s) {
@@ -147,36 +146,12 @@ std::vector<Ciphertext> PolyKPIR::Answer(const heu::lib::algorithms::elgamal::Ev
     return response;
 }
 
-/*
-yacl::math::MPInt PolyKPIR::Recover(const PrivateKey& sk, 
-                                    const std::vector<Ciphertext>& response,
-                                    const std::vector<yacl::math::MPInt>& plainX) {
-    const auto& pk = sk.GetPublicKey();
-    auto order = pk.GetEcGroup()->GetOrder();
-    auto Result = response[0];
-    auto xPowS = plainX.back(); // x^s
-                                        
-    for (size_t i = 1; i < response.size(); ++i) {
-        //  response[i] * (x^s)^i
-        auto term = HMul(response[i], xPowS, pk);
-        Result = HAdd(Result, term, pk);
-        if (i < response.size() - 1) {
-            xPowS = (xPowS * plainX.back()) % order;
-        }
-    }
-
-    auto plainResult = Decrypt(Result, sk);
-    return plainResult.m;
-}
-*/
-
-yacl::math::MPInt PolyKPIR::Recover(const heu::lib::algorithms::elgamal::Evaluator evaluator,
-                                    const heu::lib::algorithms::elgamal::Decryptor decryptor, 
+yacl::math::MPInt PolyKPIR::Recover(const Evaluator& evaluator,
+                                    const Decryptor& decryptor, 
                                     const std::vector<Ciphertext>& response,
                                     const std::vector<yacl::math::MPInt>& plainX) {
     if (response.empty()) return yacl::math::MPInt::_0_;
     
-    //const auto& pk = sk.GetPublicKey();
     const auto& xPowS = plainX.back(); // x^s
     
     // Result = response[n-1]
@@ -190,13 +165,6 @@ yacl::math::MPInt PolyKPIR::Recover(const heu::lib::algorithms::elgamal::Evaluat
 
     auto plainResult = decryptor.RawDecrypt(Result);
     return plainResult;
-}
-
-bool PolyKPIR::Verify(const yacl::math::MPInt& x, const Database& db, const yacl::math::MPInt& result) {
-    for (size_t i = 0; i < db.Y.size(); ++i) {
-        if (x == db.Y[i]) return result == db.L[i];
-    }
-    return result == yacl::math::MPInt(-1);
 }
 
 }  // namespace heu::lib::algorithms::elgamal_kpir

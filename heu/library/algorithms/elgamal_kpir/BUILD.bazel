@@ -23,11 +23,3 @@ yacl_cc_test(
         ":elgamal_kpir",
     ],
 )
-
-yacl_cc_test(
-    name = "elgamal_test",
-    srcs = ["elgamal_test.cc"],
-    deps = [
-        "//heu/library/algorithms/elgamal:elgamal",
-    ],
-)

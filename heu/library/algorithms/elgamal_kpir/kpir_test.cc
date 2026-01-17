@@ -34,14 +34,13 @@ TEST_F(ElGamalKpirTest, FullWorkflow) {
     const Decryptor decryptor(pk_, sk_);
   
     auto order = pk_.GetCurve()->GetOrder();
-    //auto order = pk_.PlaintextBound();
-    std::cout<<"order: "<<order<<std::endl;
+    //std::cout<<"order: "<<order<<std::endl;
     Database db;
     db.Random(logN, logY, logL);
     db.GetCoeffs(order);
     
-    for (int i=0;i<1;++i){
-      yacl::math::MPInt k = yacl::math::MPInt::RandomLtN(yacl::math::MPInt(2).Pow(logX)); ////db.Y[4];
+    for (int i = 0; i < 10; ++i){
+      yacl::math::MPInt k = yacl::math::MPInt::RandomLtN(yacl::math::MPInt(2).Pow(logX)); //db.Y[i];
 
       auto queryState = PolyKPIR::Query(encryptor, k, s, order);
       auto query = queryState.cipherX;
@@ -50,13 +49,13 @@ TEST_F(ElGamalKpirTest, FullWorkflow) {
    
       auto result = PolyKPIR::Recover(evaluator, decryptor, response, queryState.plainX);
     
-      bool isCorrect = PolyKPIR::Verify(k, db, result);
+      auto expectResult = db.GetVal(k);
+      EXPECT_EQ(expectResult, result);
     
-      std::cout << "\n--- Final Result ---" << std::endl;
-      std::cout << "Query Keyword: " << k << std::endl;
-      std::cout << "Recovered Label: " << result << std::endl;
-      std::cout << "Verification: " << (isCorrect ? "SUCCESS ✅" : "FAILED ❌, not found") << std::endl;
-    }
+      std::cout << "Query Keyword: " << k 
+                << " \tRecovered Label: " << result 
+                << " \tExpected Label: " << expectResult <<std::endl;
+      }
 }
 
 } // namespace heu::lib::algorithms::elgamal_kpir::test

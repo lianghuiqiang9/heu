@@ -18,6 +18,7 @@ public:
     void MultiplyByLinearFactor(std::vector<yacl::math::MPInt>& coeffs, 
                                 const yacl::math::MPInt& a, 
                                 const yacl::math::MPInt& order);
+    yacl::math::MPInt GetVal(const yacl::math::MPInt& x);
 };
 
 class PolyKPIR {
@@ -29,26 +30,21 @@ public:
         std::vector<Ciphertext> cipherX;
         std::vector<yacl::math::MPInt> plainX;
     };
-    static QueryState Query(const heu::lib::algorithms::elgamal::Encryptor encryptor, 
+    static QueryState Query(const Encryptor& encryptor, 
                             const yacl::math::MPInt& x, 
                             uint32_t s,
-                            yacl::math::MPInt order);
+                            yacl::math::MPInt& order);
 
-    static std::vector<Ciphertext> Answer(const heu::lib::algorithms::elgamal::Evaluator evaluator,
-                                          const heu::lib::algorithms::elgamal::Encryptor encryptor, 
+    static std::vector<Ciphertext> Answer(const Evaluator& evaluator,
+                                          const Encryptor& encryptor, 
                                           const std::vector<Ciphertext>& cipherX, 
                                           const Database& db, 
                                           uint32_t s);
 
-    static yacl::math::MPInt Recover(const heu::lib::algorithms::elgamal::Evaluator evaluator,
-                                     const heu::lib::algorithms::elgamal::Decryptor decryptor, 
+    static yacl::math::MPInt Recover(const Evaluator& evaluator,
+                                     const Decryptor& decryptor, 
                                      const std::vector<Ciphertext>& response,
                                      const std::vector<yacl::math::MPInt>& plainX);
-
-    static bool Verify(const yacl::math::MPInt& x, 
-                        const Database& db, 
-                        const yacl::math::MPInt& result);
-
 };
 
 
